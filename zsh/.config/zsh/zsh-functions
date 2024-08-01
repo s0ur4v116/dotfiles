@@ -89,3 +89,7 @@ function zsh_update_plugins() {
         command git -C "${d:h}" pull --ff --recurse-submodules --depth 1 --rebase --autostash
     done
 }
+
+function run() {
+    g++ "$1".cpp -o "/tmp/$1" && "/tmp/$1"
+}
