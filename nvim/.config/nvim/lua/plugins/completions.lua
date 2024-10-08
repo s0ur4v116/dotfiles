@@ -13,6 +13,9 @@ return {
           end,
         },
       },
+      config = function()
+          require("luasnip.loaders.from_snipmate").lazy_load({paths = "./snippets"})
+      end,
     },
     'saadparwaiz1/cmp_luasnip',
     'hrsh7th/cmp-nvim-lsp',
