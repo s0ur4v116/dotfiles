@@ -17,4 +17,4 @@ vim.keymap.set('t', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('t', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- make term
--- vim.keymap.set('n', '<leader>t', ':vsplit<CR>:term<CR>')
+vim.keymap.set('n', '<leader>t', ':vsplit<CR>:term<CR>I')

@@ -90,7 +90,13 @@ if command -v zoxide 1>/dev/null; then
     eval "$(zoxide init --cmd cd zsh)"
 fi
 
+# command-not-found
+if [ -f /usr/share/doc/pkgfile/command-not-found.zsh ]; then
+    source /usr/share/doc/pkgfile/command-not-found.zsh
+fi
+
 # Plugins
 zsh_add_plugin zsh-users/zsh-completions
-zsh_add_plugin zsh-users/zsh-syntax-highlighting
+# zsh_add_plugin zsh-users/zsh-syntax-highlighting
+zsh_add_plugin zdharma-continuum/fast-syntax-highlighting
 zsh_add_plugin zsh-users/zsh-autosuggestions
