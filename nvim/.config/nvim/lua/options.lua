@@ -27,10 +27,10 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "*",
-  callback = function()
-    vim.opt_local.formatoptions:remove({ 'r', 'o' })
-  end,
+    pattern = "*",
+    callback = function()
+        vim.opt_local.formatoptions:remove({ 'r', 'o' })
+    end,
 })
 
 -- Netrw
