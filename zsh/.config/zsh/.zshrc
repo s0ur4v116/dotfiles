@@ -4,9 +4,9 @@
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.config/zsh/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
+# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# fi
 
 # Options
 setopt AUTO_CD
@@ -47,6 +47,7 @@ setopt APPEND_HISTORY            # Append history to history file.
 setopt INC_APPEND_HISTORY_TIME   # Write to history file upon command completion.
 
 # Basic auto/tab complete:
+fpath=($HOME/.zsh/completions $fpath)
 zmodload zsh/complist
 autoload -Uz compinit ; compinit -d ${XDG_CACHE_HOME:-$HOME/.cache}/.zcompdump
 _comp_options+=(globdots)        # Include hidden files.
@@ -64,9 +65,25 @@ autoload -U +X bashcompinit && bashcompinit
 if [ -f /usr/share/fzf/completion.zsh ] ; then . /usr/share/fzf/completion.zsh ; fi
 if [ -f /usr/share/fzf/key-bindings.zsh ] ; then . /usr/share/fzf/key-bindings.zsh ; fi
 
+# uv fix
+_uv_run_mod() {
+    if [[ "$words[2]" == "run" && "$words[CURRENT]" != -* ]]; then
+        _arguments '*:filename:_files'
+    else
+        _uv "$@"
+    fi
+}
+compdef _uv_run_mod uv
+
 # Vim mode
 bindkey -v
 export KEYTIMEOUT=1
+autoload edit-command-line
+zle -N edit-command-line
+bindkey '^e' edit-command-line
+bindkey -M vicmd '^[[P' vi-delete-char
+bindkey -M vicmd '^e' edit-command-line
+bindkey -M visual '^[[P' vi-delete
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -M menuselect 'k' vi-up-line-or-history
@@ -77,26 +94,50 @@ bindkey -M menuselect 'up' vi-up-line-or-history
 bindkey -M menuselect 'right' vi-forward-char
 bindkey "^?" backward-delete-char           # Fix Backspace key in insert mode
 
+# ci", ci', ci`, di", etc
+autoload -U select-quoted
+zle -N select-quoted
+for m in visual viopp; do
+        for c in {a,i}{\',\",\`}; do
+                bindkey -M $m $c select-quoted
+        done
+done
+
+# ci{, ci(, ci<, di{, etc
+autoload -U select-bracketed
+zle -N select-bracketed
+for m in visual viopp; do
+        for c in {a,i}${(s..)^:-'()[]{}<>bB'}; do
+                bindkey -M $m $c select-bracketed
+        done
+done
+
 # Source important files
-source $ZDOTDIR/zsh-aliases
-source $ZDOTDIR/zsh-functions
+source $XDG_CONFIG_HOME/shell/aliases
+source $XDG_CONFIG_HOME/shell/functions
 
 # Prompt
-zsh_add_theme romkatv/powerlevel10k
-[[ ! -f $ZDOTDIR/.p10k.zsh ]] || source $ZDOTDIR/.p10k.zsh
+# source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+# [[ ! -f $ZDOTDIR/.p10k.zsh ]] || source $ZDOTDIR/.p10k.zsh
+eval "$(starship init zsh)"
+# Remove that one pesky newline
+precmd() {
+    precmd() {
+        echo
+    }
+}
+alias clear="precmd() { precmd() { echo } } && clear"
 
 # Zoxide
 if command -v zoxide 1>/dev/null; then
     eval "$(zoxide init --cmd cd zsh)"
 fi
 
-# command-not-found
-if [ -f /usr/share/doc/pkgfile/command-not-found.zsh ]; then
-    source /usr/share/doc/pkgfile/command-not-found.zsh
-fi
+# Pyenv
+# export PYENV_ROOT="$HOME/.pyenv"
+# [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+# eval "$(pyenv init - zsh)"
 
 # Plugins
-zsh_add_plugin zsh-users/zsh-completions
-# zsh_add_plugin zsh-users/zsh-syntax-highlighting
-zsh_add_plugin zdharma-continuum/fast-syntax-highlighting
-zsh_add_plugin zsh-users/zsh-autosuggestions
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
